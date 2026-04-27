@@ -1,0 +1,864 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary Breakup Calculator | HS Ahuja & Associates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #1e40af;
+            --accent: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --text: #334155;
+            --text-light: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .playfair {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 24px;
+            background-color: #e2e8f0;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-switch.active {
+            background-color: var(--primary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(26px);
+        }
+
+        .result-card {
+            border-left: 4px solid var(--primary);
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            body {
+                background-color: white;
+            }
+            .print-container {
+                max-width: 100%;
+                padding: 0;
+                box-shadow: none;
+                border: none;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+
+        .salary-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chart-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chart-bar {
+            height: 20px;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-12 max-w-6xl">
+        <!-- Header -->
+        <header class="mb-12 text-center fade-in">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 playfair mb-2">Salary Breakup Calculator</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Professional salary structure calculator for Indian employees</p>
+            <div class="mt-6 text-sm text-gray-500">
+                Made by <span class="font-semibold text-gray-700">HS Ahuja & Associates</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Input Section -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-xl card-shadow p-6 fade-in delay-1">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-6">Employee Details</h2>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label for="employeeName" class="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
+                            <input type="text" id="employeeName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="John Doe">
+                        </div>
+
+                        <div>
+                            <label for="ctc" class="block text-sm font-medium text-gray-700 mb-1">Total CTC (₹)</label>
+                            <input type="number" id="ctc" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="800000" min="0">
+                        </div>
+
+                        <div>
+                            <label for="minBasic" class="block text-sm font-medium text-gray-700 mb-1">Minimum Basic Salary (₹)</label>
+                            <input type="number" id="minBasic" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="25000" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deduction Options -->
+                <div class="bg-white rounded-xl card-shadow p-6 fade-in delay-2">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-6">Deduction Options</h2>
+
+                    <div class="space-y-5">
+                        <!-- PF Option -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="text-sm font-medium text-gray-700">Provident Fund (PF)</label>
+                                <div class="toggle-switch" id="pfToggle"></div>
+                            </div>
+                            <div class="ml-1 text-xs text-gray-500">13% of basic salary</div>
+
+                            <div id="pfOptions" class="mt-3 ml-4 space-y-2 hidden">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="pfLimit" class="h-4 w-4 text-blue-600 rounded">
+                                    <label for="pfLimit" class="ml-2 text-sm text-gray-600">Limit to ₹15,000 basic</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ESI Option -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="text-sm font-medium text-gray-700">Employee State Insurance (ESI)</label>
+                                <div class="toggle-switch" id="esiToggle"></div>
+                            </div>
+                            <div class="ml-1 text-xs text-gray-500">3.25% if basic ≤ ₹21,000</div>
+                        </div>
+
+                        <!-- Additional Benefits -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-3">Additional Benefits</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="gratuity" class="h-4 w-4 text-blue-600 rounded">
+                                    <label for="gratuity" class="ml-2 text-sm text-gray-600">Gratuity (4.81% of basic)</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="bonus" class="h-4 w-4 text-blue-600 rounded">
+                                    <label for="bonus" class="ml-2 text-sm text-gray-600">Bonus (8.33% of basic)</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="leaveWages" class="h-4 w-4 text-blue-600 rounded">
+                                    <label for="leaveWages" class="ml-2 text-sm text-gray-600">Leave with Wages</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculate Button -->
+                <div class="fade-in delay-3">
+                    <button id="calculateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Calculate Salary Breakup
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-xl card-shadow p-6 fade-in delay-1 hidden" id="resultsContainer">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold text-gray-800">Salary Breakup Results</h2>
+                        <button id="printBtn" class="no-print flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-700 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Print
+                        </button>
+                    </div>
+
+                    <div class="print-container">
+                        <!-- Employee Info -->
+                        <div class="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200 print-only">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Employee Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Name</p>
+                                    <p id="resultName" class="font-medium text-gray-800"></p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Total CTC</p>
+                                    <p id="resultCTC" class="font-medium text-gray-800"></p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Date</p>
+                                    <p id="resultDate" class="font-medium text-gray-800"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Breakup Summary -->
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Salary Breakup Summary</h3>
+
+                            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                                <div class="flex justify-between mb-3">
+                                    <span class="text-sm font-medium text-gray-600">Total CTC</span>
+                                    <span id="summaryCTC" class="text-lg font-bold text-gray-800">₹0</span>
+                                </div>
+
+                                <div class="salary-chart mb-4">
+                                    <div class="chart-item">
+                                        <span class="text-sm text-gray-600 w-32">Basic Salary</span>
+                                        <div class="chart-bar bg-blue-500" style="width: 0%"></div>
+                                        <span class="text-sm font-medium text-gray-800" id="chartBasic">₹0 (0%)</span>
+                                    </div>
+                                    <div class="chart-item">
+                                        <span class="text-sm text-gray-600 w-32">Allowances</span>
+                                        <div class="chart-bar bg-green-500" style="width: 0%"></div>
+                                        <span class="text-sm font-medium text-gray-800" id="chartAllowances">₹0 (0%)</span>
+                                    </div>
+                                    <div class="chart-item">
+                                        <span class="text-sm text-gray-600 w-32">Deductions</span>
+                                        <div class="chart-bar bg-red-500" style="width: 0%"></div>
+                                        <span class="text-sm font-medium text-gray-800" id="chartDeductions">₹0 (0%)</span>
+                                    </div>
+                                    <div class="chart-item">
+                                        <span class="text-sm text-gray-600 w-32">Benefits</span>
+                                        <div class="chart-bar bg-purple-500" style="width: 0%"></div>
+                                        <span class="text-sm font-medium text-gray-800" id="chartBenefits">₹0 (0%)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Monthly Breakup -->
+                                <div class="bg-white rounded-lg border border-gray-200 p-4 result-card">
+                                    <h4 class="font-medium text-gray-800 mb-3">Monthly Breakup</h4>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Basic Salary</span>
+                                            <span id="monthlyBasic" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">House Rent Allowance</span>
+                                            <span id="monthlyHRA" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Conveyance Allowance</span>
+                                            <span id="monthlyConveyance" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Other Allowances</span>
+                                            <span id="monthlyOther" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between font-semibold pt-2 border-t border-gray-200 mt-2">
+                                            <span class="text-sm text-gray-800">Gross Salary</span>
+                                            <span id="monthlyGross" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Provident Fund</span>
+                                            <span id="monthlyPF" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">ESI</span>
+                                            <span id="monthlyESI" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between font-semibold pt-2 border-t border-gray-200 mt-2">
+                                            <span class="text-sm text-gray-800">Net Take Home</span>
+                                            <span id="monthlyNet" class="text-lg font-bold text-blue-600">₹0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Annual Breakup -->
+                                <div class="bg-white rounded-lg border border-gray-200 p-4 result-card">
+                                    <h4 class="font-medium text-gray-800 mb-3">Annual Breakup</h4>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Basic Salary</span>
+                                            <span id="annualBasic" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">House Rent Allowance</span>
+                                            <span id="annualHRA" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Conveyance Allowance</span>
+                                            <span id="annualConveyance" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Other Allowances</span>
+                                            <span id="annualOther" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Gratuity</span>
+                                            <span id="annualGratuity" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Bonus</span>
+                                            <span id="annualBonus" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Leave with Wages</span>
+                                            <span id="annualLeave" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between font-semibold pt-2 border-t border-gray-200 mt-2">
+                                            <span class="text-sm text-gray-800">Gross Salary</span>
+                                            <span id="annualGross" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">Provident Fund</span>
+                                            <span id="annualPF" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm text-gray-600">ESI</span>
+                                            <span id="annualESI" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="flex justify-between font-semibold pt-2 border-t border-gray-200 mt-2">
+                                            <span class="text-sm text-gray-800">Total Deductions</span>
+                                            <span id="annualDeductions" class="text-sm font-medium text-gray-800">₹0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Breakdown -->
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Detailed Breakdown</h3>
+
+                            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Component</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly (₹)</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Annual (₹)</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% of CTC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Basic Salary</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableBasicMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableBasicAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableBasicPercent">0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">House Rent Allowance (HRA)</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableHRAMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableHRAAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableHRAPercent">0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Conveyance Allowance</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableConveyanceMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableConveyanceAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableConveyancePercent">0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Other Allowances</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableOtherMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableOtherAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableOtherPercent">0%</td>
+                                        </tr>
+                                        <tr class="bg-gray-50">
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900">Gross Salary</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900" id="tableGrossMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900" id="tableGrossAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900" id="tableGrossPercent">0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Provident Fund (PF)</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tablePFMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tablePFAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tablePFPercent">0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Employee State Insurance (ESI)</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableESIMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableESIAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableESIPercent">0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Gratuity</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableGratuityMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableGratuityAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableGratuityPercent">0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Bonus</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableBonusMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableBonusAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableBonusPercent">0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Leave with Wages</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableLeaveMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableLeaveAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" id="tableLeavePercent">0%</td>
+                                        </tr>
+                                        <tr class="bg-gray-50">
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900">Total Deductions</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900" id="tableDeductionsMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900" id="tableDeductionsAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900" id="tableDeductionsPercent">0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-blue-600">Net Take Home</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-blue-600" id="tableNetMonthly">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-blue-600" id="tableNetAnnual">₹0</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-blue-600" id="tableNetPercent">0%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                            <h3 class="text-lg font-semibold text-blue-800 mb-3">Important Notes</h3>
+                            <ul class="space-y-2 text-sm text-blue-700 list-disc pl-5">
+                                <li>This calculation is based on standard Indian payroll practices but may vary based on company policies.</li>
+                                <li>PF is calculated at 12% employee contribution + 1% admin charges (total 13%).</li>
+                                <li>ESI is applicable only if basic salary is ₹21,000 or less per month.</li>
+                                <li>Gratuity is calculated at 4.81% of annual basic salary.</li>
+                                <li>Bonus is calculated at 8.33% of annual basic salary (minimum bonus act).</li>
+                                <li>For exact calculations, consult with your payroll department or a professional.</li>
+                            </ul>
+                            <div class="mt-4 text-right text-xs text-gray-500">
+                                Calculated by HS Ahuja & Associates
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="bg-white rounded-xl card-shadow p-12 text-center fade-in delay-1" id="emptyState">
+                    <div class="mx-auto w-24 h-24 mb-6 flex items-center justify-center bg-blue-100 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Enter details to calculate</h3>
+                    <p class="text-gray-600">Fill in the employee information and deduction options, then click "Calculate Salary Breakup" to see the detailed salary structure.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const employeeName = document.getElementById('employeeName');
+        const ctcInput = document.getElementById('ctc');
+        const minBasicInput = document.getElementById('minBasic');
+        const pfToggle = document.getElementById('pfToggle');
+        const pfOptions = document.getElementById('pfOptions');
+        const pfLimit = document.getElementById('pfLimit');
+        const esiToggle = document.getElementById('esiToggle');
+        const gratuity = document.getElementById('gratuity');
+        const bonus = document.getElementById('bonus');
+        const leaveWages = document.getElementById('leaveWages');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const emptyState = document.getElementById('emptyState');
+        const printBtn = document.getElementById('printBtn');
+
+        // Result Elements
+        const resultName = document.getElementById('resultName');
+        const resultCTC = document.getElementById('resultCTC');
+        const resultDate = document.getElementById('resultDate');
+        const summaryCTC = document.getElementById('summaryCTC');
+
+        // Monthly Elements
+        const monthlyBasic = document.getElementById('monthlyBasic');
+        const monthlyHRA = document.getElementById('monthlyHRA');
+        const monthlyConveyance = document.getElementById('monthlyConveyance');
+        const monthlyOther = document.getElementById('monthlyOther');
+        const monthlyGross = document.getElementById('monthlyGross');
+        const monthlyPF = document.getElementById('monthlyPF');
+        const monthlyESI = document.getElementById('monthlyESI');
+        const monthlyNet = document.getElementById('monthlyNet');
+
+        // Annual Elements
+        const annualBasic = document.getElementById('annualBasic');
+        const annualHRA = document.getElementById('annualHRA');
+        const annualConveyance = document.getElementById('annualConveyance');
+        const annualOther = document.getElementById('annualOther');
+        const annualGratuity = document.getElementById('annualGratuity');
+        const annualBonus = document.getElementById('annualBonus');
+        const annualLeave = document.getElementById('annualLeave');
+        const annualGross = document.getElementById('annualGross');
+        const annualPF = document.getElementById('annualPF');
+        const annualESI = document.getElementById('annualESI');
+        const annualDeductions = document.getElementById('annualDeductions');
+
+        // Table Elements
+        const tableBasicMonthly = document.getElementById('tableBasicMonthly');
+        const tableBasicAnnual = document.getElementById('tableBasicAnnual');
+        const tableBasicPercent = document.getElementById('tableBasicPercent');
+        const tableHRAMonthly = document.getElementById('tableHRAMonthly');
+        const tableHRAAnnual = document.getElementById('tableHRAAnnual');
+        const tableHRAPercent = document.getElementById('tableHRAPercent');
+        const tableConveyanceMonthly = document.getElementById('tableConveyanceMonthly');
+        const tableConveyanceAnnual = document.getElementById('tableConveyanceAnnual');
+        const tableConveyancePercent = document.getElementById('tableConveyancePercent');
+        const tableOtherMonthly = document.getElementById('tableOtherMonthly');
+        const tableOtherAnnual = document.getElementById('tableOtherAnnual');
+        const tableOtherPercent = document.getElementById('tableOtherPercent');
+        const tableGrossMonthly = document.getElementById('tableGrossMonthly');
+        const tableGrossAnnual = document.getElementById('tableGrossAnnual');
+        const tableGrossPercent = document.getElementById('tableGrossPercent');
+        const tablePFMonthly = document.getElementById('tablePFMonthly');
+        const tablePFAnnual = document.getElementById('tablePFAnnual');
+        const tablePFPercent = document.getElementById('tablePFPercent');
+        const tableESIMonthly = document.getElementById('tableESIMonthly');
+        const tableESIAnnual = document.getElementById('tableESIAnnual');
+        const tableESIPercent = document.getElementById('tableESIPercent');
+        const tableGratuityMonthly = document.getElementById('tableGratuityMonthly');
+        const tableGratuityAnnual = document.getElementById('tableGratuityAnnual');
+        const tableGratuityPercent = document.getElementById('tableGratuityPercent');
+        const tableBonusMonthly = document.getElementById('tableBonusMonthly');
+        const tableBonusAnnual = document.getElementById('tableBonusAnnual');
+        const tableBonusPercent = document.getElementById('tableBonusPercent');
+        const tableLeaveMonthly = document.getElementById('tableLeaveMonthly');
+        const tableLeaveAnnual = document.getElementById('tableLeaveAnnual');
+        const tableLeavePercent = document.getElementById('tableLeavePercent');
+        const tableDeductionsMonthly = document.getElementById('tableDeductionsMonthly');
+        const tableDeductionsAnnual = document.getElementById('tableDeductionsAnnual');
+        const tableDeductionsPercent = document.getElementById('tableDeductionsPercent');
+        const tableNetMonthly = document.getElementById('tableNetMonthly');
+        const tableNetAnnual = document.getElementById('tableNetAnnual');
+        const tableNetPercent = document.getElementById('tableNetPercent');
+
+        // Chart Elements
+        const chartBasic = document.getElementById('chartBasic');
+        const chartAllowances = document.getElementById('chartAllowances');
+        const chartDeductions = document.getElementById('chartDeductions');
+        const chartBenefits = document.getElementById('chartBenefits');
+
+        // Toggle Switches
+        pfToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            pfOptions.classList.toggle('hidden');
+        });
+
+        esiToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+
+        // Calculate Button
+        calculateBtn.addEventListener('click', calculateSalary);
+
+        // Print Button
+        printBtn.addEventListener('click', function() {
+            window.print();
+        });
+
+        // Format number as Indian currency
+        function formatCurrency(num) {
+            if (num === 0) return '₹0';
+            const formatter = new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            return formatter.format(num);
+        }
+
+        // Format percentage
+        function formatPercent(num, total) {
+            if (total === 0) return '0%';
+            const percent = (num / total) * 100;
+            return percent.toFixed(1) + '%';
+        }
+
+        // Calculate Salary Breakup
+        function calculateSalary() {
+            // Get input values
+            const name = employeeName.value.trim() || 'Employee';
+            const ctc = parseFloat(ctcInput.value) || 0;
+            const minBasic = parseFloat(minBasicInput.value) || 0;
+            const includePF = pfToggle.classList.contains('active');
+            const pfLimitTo15k = pfLimit.checked;
+            const includeESI = esiToggle.classList.contains('active');
+            const includeGratuity = gratuity.checked;
+            const includeBonus = bonus.checked;
+            const includeLeave = leaveWages.checked;
+
+            // Validate inputs
+            if (ctc <= 0) {
+                alert('Please enter a valid CTC amount');
+                return;
+            }
+
+            // Calculate Basic Salary (greater of 50% CTC or minBasic)
+            let basicSalary = Math.max(0.5 * ctc, minBasic);
+            basicSalary = Math.min(basicSalary, ctc); // Can't exceed CTC
+
+            // Calculate PF
+            let pf = 0;
+            let pfBasic = basicSalary;
+
+            if (includePF) {
+                if (pfLimitTo15k) {
+                    pfBasic = Math.min(basicSalary, 15000);
+                }
+                pf = pfBasic * 0.13;
+            }
+
+            // Calculate ESI
+            let esi = 0;
+            if (includeESI && basicSalary <= 21000) {
+                esi = basicSalary * 0.0325;
+            }
+
+            // Calculate remaining amount for allowances
+            let remainingAmount = ctc - basicSalary - pf - esi;
+
+            // Calculate additional benefits if included
+            let gratuityAmount = 0;
+            let bonusAmount = 0;
+            let leaveAmount = 0;
+
+            if (includeGratuity) {
+                gratuityAmount = basicSalary * 0.0481;
+                remainingAmount -= gratuityAmount;
+            }
+
+            if (includeBonus) {
+                bonusAmount = basicSalary * 0.0833;
+                remainingAmount -= bonusAmount;
+            }
+
+            if (includeLeave) {
+                // Assuming 15 days leave with wages (15/30 = 0.5 of monthly basic)
+                leaveAmount = basicSalary * 0.5;
+                remainingAmount -= leaveAmount;
+            }
+
+            // Distribute remaining amount to allowances (HRA 40%, Conveyance 10%, Other 50%)
+            const hra = remainingAmount * 0.4;
+            const conveyance = remainingAmount * 0.1;
+            const otherAllowances = remainingAmount * 0.5;
+
+            // Calculate gross salary (before deductions)
+            const grossSalary = basicSalary + hra + conveyance + otherAllowances;
+
+            // Calculate net salary (after deductions)
+            const netSalary = grossSalary - pf - esi;
+
+            // Annual calculations
+            const annualBasic = basicSalary * 12;
+            const annualHRA = hra * 12;
+            const annualConveyance = conveyance * 12;
+            const annualOther = otherAllowances * 12;
+            const annualGross = grossSalary * 12;
+            const annualPF = pf * 12;
+            const annualESI = esi * 12;
+            const annualNet = netSalary * 12;
+
+            // Update UI with results
+            resultName.textContent = name;
+            resultCTC.textContent = formatCurrency(ctc);
+            resultDate.textContent = new Date().toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            summaryCTC.textContent = formatCurrency(ctc);
+
+            // Monthly values
+            monthlyBasic.textContent = formatCurrency(basicSalary);
+            monthlyHRA.textContent = formatCurrency(hra);
+            monthlyConveyance.textContent = formatCurrency(conveyance);
+            monthlyOther.textContent = formatCurrency(otherAllowances);
+            monthlyGross.textContent = formatCurrency(grossSalary);
+            monthlyPF.textContent = formatCurrency(pf);
+            monthlyESI.textContent = formatCurrency(esi);
+            monthlyNet.textContent = formatCurrency(netSalary);
+
+            // Annual values
+            annualBasic.textContent = formatCurrency(annualBasic);
+            annualHRA.textContent = formatCurrency(annualHRA);
+            annualConveyance.textContent = formatCurrency(annualConveyance);
+            annualOther.textContent = formatCurrency(annualOther);
+            annualGratuity.textContent = formatCurrency(gratuityAmount);
+            annualBonus.textContent = formatCurrency(bonusAmount);
+            annualLeave.textContent = formatCurrency(leaveAmount);
+            annualGross.textContent = formatCurrency(annualGross);
+            annualPF.textContent = formatCurrency(annualPF);
+            annualESI.textContent = formatCurrency(annualESI);
+            annualDeductions.textContent = formatCurrency(annualPF + annualESI);
+
+            // Table values (monthly)
+            tableBasicMonthly.textContent = formatCurrency(basicSalary);
+            tableHRAMonthly.textContent = formatCurrency(hra);
+            tableConveyanceMonthly.textContent = formatCurrency(conveyance);
+            tableOtherMonthly.textContent = formatCurrency(otherAllowances);
+            tableGrossMonthly.textContent = formatCurrency(grossSalary);
+            tablePFMonthly.textContent = formatCurrency(pf);
+            tableESIMonthly.textContent = formatCurrency(esi);
+            tableGratuityMonthly.textContent = formatCurrency(gratuityAmount / 12);
+            tableBonusMonthly.textContent = formatCurrency(bonusAmount / 12);
+            tableLeaveMonthly.textContent = formatCurrency(leaveAmount / 12);
+            tableDeductionsMonthly.textContent = formatCurrency(pf + esi);
+            tableNetMonthly.textContent = formatCurrency(netSalary);
+
+            // Table values (annual)
+            tableBasicAnnual.textContent = formatCurrency(annualBasic);
+            tableHRAAnnual.textContent = formatCurrency(annualHRA);
+            tableConveyanceAnnual.textContent = formatCurrency(annualConveyance);
+            tableOtherAnnual.textContent = formatCurrency(annualOther);
+            tableGrossAnnual.textContent = formatCurrency(annualGross);
+            tablePFAnnual.textContent = formatCurrency(annualPF);
+            tableESIAnnual.textContent = formatCurrency(annualESI);
+            tableGratuityAnnual.textContent = formatCurrency(gratuityAmount);
+            tableBonusAnnual.textContent = formatCurrency(bonusAmount);
+            tableLeaveAnnual.textContent = formatCurrency(leaveAmount);
+            tableDeductionsAnnual.textContent = formatCurrency(annualPF + annualESI);
+            tableNetAnnual.textContent = formatCurrency(annualNet);
+
+            // Table values (percentages)
+            tableBasicPercent.textContent = formatPercent(basicSalary, ctc);
+            tableHRAPercent.textContent = formatPercent(hra, ctc);
+            tableConveyancePercent.textContent = formatPercent(conveyance, ctc);
+            tableOtherPercent.textContent = formatPercent(otherAllowances, ctc);
+            tableGrossPercent.textContent = formatPercent(grossSalary, ctc);
+            tablePFPercent.textContent = formatPercent(pf, ctc);
+            tableESIPercent.textContent = formatPercent(esi, ctc);
+            tableGratuityPercent.textContent = formatPercent(gratuityAmount, ctc);
+            tableBonusPercent.textContent = formatPercent(bonusAmount, ctc);
+            tableLeavePercent.textContent = formatPercent(leaveAmount, ctc);
+            tableDeductionsPercent.textContent = formatPercent(pf + esi, ctc);
+            tableNetPercent.textContent = formatPercent(annualNet, ctc);
+
+            // Update chart
+            const total = ctc;
+            const basicPercent = (basicSalary / total) * 100;
+            const allowancesPercent = ((hra + conveyance + otherAllowances) / total) * 100;
+            const deductionsPercent = ((pf + esi) / total) * 100;
+            const benefitsPercent = ((gratuityAmount + bonusAmount + leaveAmount) / total) * 100;
+
+            chartBasic.textContent = `${formatCurrency(basicSalary)} (${basicPercent.toFixed(1)}%)`;
+            chartAllowances.textContent = `${formatCurrency(hra + conveyance + otherAllowances)} (${allowancesPercent.toFixed(1)}%)`;
+            chartDeductions.textContent = `${formatCurrency(pf + esi)} (${deductionsPercent.toFixed(1)}%)`;
+            chartBenefits.textContent = `${formatCurrency(gratuityAmount + bonusAmount + leaveAmount)} (${benefitsPercent.toFixed(1)}%)`;
+
+            // Update chart bars
+            document.querySelectorAll('.chart-bar').forEach((bar, index) => {
+                let percent = 0;
+                if (index === 0) percent = basicPercent;
+                else if (index === 1) percent = allowancesPercent;
+                else if (index === 2) percent = deductionsPercent;
+                else if (index === 3) percent = benefitsPercent;
+
+                bar.style.width = `${percent}%`;
+
+                // Set timeout to allow CSS transition
+                setTimeout(() => {
+                    bar.style.width = `${percent}%`;
+                }, 50);
+            });
+
+            // Show results and hide empty state
+            resultsContainer.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            // Scroll to results
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize form with default values
+        function initForm() {
+            employeeName.value = '';
+            ctcInput.value = '800000';
+            minBasicInput.value = '25000';
+            pfToggle.classList.add('active');
+            esiToggle.classList.add('active');
+            gratuity.checked = true;
+            bonus.checked = true;
+            leaveWages.checked = false;
+        }
+
+        // Initialize
+        initForm();
+    </script>
+</body>
+</html>
